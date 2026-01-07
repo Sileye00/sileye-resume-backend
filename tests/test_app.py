@@ -7,12 +7,14 @@ import os
 # Add src directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from app import lambda_handler
+# Mock boto3 before importing app
+with patch('boto3.resource'):
+    from app import lambda_handler
 
 def test_lambda_handler_new_visitor():
     """Test lambda handler with no existing count"""
     
-    # Mock DynamoDB response for new visitor
+    # Mock DynamoDB table
     with patch('app.table') as mock_table:
         mock_table.get_item.return_value = {}
         mock_table.put_item.return_value = None
@@ -30,7 +32,7 @@ def test_lambda_handler_new_visitor():
 def test_lambda_handler_existing_visitor():
     """Test lambda handler with existing count"""
     
-    # Mock DynamoDB response for existing visitor
+    # Mock DynamoDB table
     with patch('app.table') as mock_table:
         mock_table.get_item.return_value = {'Item': {'count': 5}}
         mock_table.put_item.return_value = None
